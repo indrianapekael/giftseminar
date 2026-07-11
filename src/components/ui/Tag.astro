@@ -1,0 +1,75 @@
+---
+export interface Props {
+  name: string;
+  href?: string;
+  size?: 'sm' | 'md';
+  class?: string;
+}
+
+import { withBase } from '@/lib/url';
+
+const { name, href, size = 'md', class: className = '' } = Astro.props;
+
+// Slug logic mirrors tagSlug() in src/lib/posts.ts (used elsewhere).
+const slug = name
+  .toLowerCase()
+  .trim()
+  .replace(/[^a-z0-9]+/g, '-')
+  .replace(/^-+|-+$/g, '');
+const target = href ? withBase(href) : undefined; // do not auto-link by default
+const classes = ['tag', `tag--${size}`, className].filter(Boolean).join(' ');
+---
+
+{
+  target ? (
+    <a class={classes} href={target}>
+      <span class="tag__hash" aria-hidden="true">#</span>{name}
+    </a>
+  ) : (
+    <span class={classes} aria-hidden="false">
+      <span class="tag__hash" aria-hidden="true">#</span>{name}
+    </span>
+  )
+}
+
+<style>
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.15em;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    /* Solid glass background (no backdrop-filter): tags render inside
+       .glass-card, and a nested blur forces an extra, costly compositor pass. */
+    background: var(--glass-bg-solid);
+    border: 1px solid var(--glass-border);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast),
+      background-color var(--transition-fast);
+  }
+
+  .tag--sm {
+    font-size: var(--text-xs);
+    padding: 2px var(--space-sm);
+  }
+
+  .tag:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-accent-glass);
+  }
+
+  .tag:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  .tag__hash {
+    opacity: 0.6;
+  }
+</style>

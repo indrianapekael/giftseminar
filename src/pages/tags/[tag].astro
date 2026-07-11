@@ -1,0 +1,198 @@
+---
+import type { GetStaticPaths } from 'astro';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Header from '@/components/common/Header.astro';
+import Footer from '@/components/common/Footer.astro';
+import Container from '@/components/ui/Container.astro';
+import PostGrid from '@/components/blog/PostGrid.astro';
+import { withBase } from '@/lib/url';
+import { getAllPosts } from '@/lib/db';
+
+function parseTags(tags: string | string[] | null | undefined) {
+  if (!tags) return [];
+
+  if (Array.isArray(tags)) {
+    return tags.map((tag) => String(tag).trim()).filter(Boolean);
+  }
+
+  const raw = String(tags).trim();
+  if (!raw) return [];
+
+  try {
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed)) {
+      return parsed.map((tag) => String(tag).trim()).filter(Boolean);
+    }
+    if (typeof parsed === 'string') {
+      return [parsed.trim()].filter(Boolean);
+    }
+  } catch {
+    // ignore and fall back to manual parsing below
+  }
+
+  const quotedMatches = raw.match(/['"]([^'"]+)['"]/g) || [];
+  if (quotedMatches.length > 0) {
+    return quotedMatches.map((match) => match.replace(/^['"]|['"]$/g, '').trim()).filter(Boolean);
+  }
+
+  return raw
+    .split(/[,;]+/)
+    .map((t) => t.trim())
+    .filter(Boolean);
+}
+
+function tagSlug(tag: string) {
+  return tag
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function matchesTag(tag: string, slug: string, post: any) {
+  const normalizedTag = tagSlug(tag);
+  if (!normalizedTag || !slug) return false;
+
+  if (normalizedTag === slug) return true;
+
+  const tokens = normalizedTag.split('-');
+  const slugTokens = slug.split('-');
+
+  if (tokens.includes('seminar') && slugTokens.includes('seminar')) return true;
+  if (tokens.includes('kit') && slugTokens.includes('kit')) return true;
+  if (normalizedTag.includes(slug) || slug.includes(normalizedTag)) return true;
+
+  const haystack = [post.title, post.excerpt, post.content, post.slug]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase();
+
+  return haystack.includes(slug.replace(/-/g, ' ')) || haystack.includes(normalizedTag.replace(/-/g, ' '));
+}
+
+function collectTags(posts: any[]) {
+  const bySlug = new Map<string, { tag: string; count: number }>();
+  for (const post of posts) {
+    const tags = parseTags(post.tags);
+    const seen = new Set<string>();
+    for (const raw of tags) {
+      const slug = tagSlug(raw);
+      if (!slug || seen.has(slug)) continue;
+      seen.add(slug);
+      const existing = bySlug.get(slug);
+      if (existing) existing.count += 1;
+      else bySlug.set(slug, { tag: raw, count: 1 });
+    }
+  }
+  return [...bySlug.entries()].map(([slug, { tag, count }]) => ({ tag, slug, count }));
+}
+
+function postsByTag(posts: any[], slug: string) {
+  return posts.filter((post) =>
+    Array.isArray(post.tags)
+      ? post.tags.some((rawTag: string | number | boolean) => matchesTag(String(rawTag), slug, post))
+      : parseTags(post.tags).some((tag: string) => matchesTag(tag, slug, post))
+  );
+}
+
+function mapRowsToPosts(rows: any[]) {
+  return rows.map((post) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    slug: post.slug,
+    cover_image: post.cover_image || undefined,
+    published_at: post.published_at,
+    read_time: post.read_time,
+    is_featured: post.is_featured === 1,
+    tags: parseTags(post.tags),
+    content: post.content,
+  }));
+}
+
+export const getStaticPaths = (async () => {
+  const posts = mapRowsToPosts(await getAllPosts());
+  const tags = collectTags(posts);
+  return tags.map(({ tag, slug }) => ({
+    params: { tag: slug },
+    props: { tag, posts: postsByTag(posts, slug) },
+  }));
+}) satisfies GetStaticPaths;
+
+interface Props {
+  tag: string;
+  posts?: ReturnType<typeof mapRowsToPosts>;
+}
+
+const { tag, posts: rawPosts } = Astro.props;
+const posts = Array.isArray(rawPosts) ? rawPosts : [];
+---
+
+<BaseLayout
+  title={`#${tag}`}
+  description={`Artikel dengan tag "${tag}" di arsip SeminarKit.`}
+>
+  <Header />
+
+  <main id="main" tabindex="-1" class="main-content">
+    <section class="section">
+      <Container>
+        <header class="tag-header">
+          <a href={withBase('/tags')} class="tag-back">← All tags</a>
+          <h1 class="tag-title">
+            <span class="tag-hash">#</span>{tag}
+          </h1>
+          <p class="tag-count">
+            {posts.length} {posts.length === 1 ? 'artikel' : 'artikel'}
+          </p>
+        </header>
+
+        <PostGrid posts={posts} />
+      </Container>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .main-content {
+    min-height: 100vh;
+    padding-top: var(--space-2xl);
+  }
+
+  .section {
+    padding: var(--space-2xl) 0 var(--space-3xl);
+  }
+
+  .tag-header {
+    text-align: center;
+    margin-bottom: var(--space-2xl);
+  }
+
+  .tag-back {
+    display: inline-block;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    margin-bottom: var(--space-md);
+    transition: color var(--transition-fast);
+  }
+  .tag-back:hover {
+    color: var(--color-accent);
+  }
+
+  .tag-title {
+    font-size: var(--text-4xl);
+    font-weight: 800;
+  }
+
+  .tag-hash {
+    color: var(--color-accent);
+  }
+
+  .tag-count {
+    color: var(--color-text-muted);
+    margin-top: var(--space-sm);
+  }
+</style>

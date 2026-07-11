@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "title": "Premium",
+    "slug": "paket-premium",
+    "excerpt": "Solusi penuh untuk acara besar dengan opsi kustom, merchandise, dan dukungan persiapan acara. ",
+    "content": "Solusi penuh untuk acara besar dengan opsi kustom, merchandise, dan dukungan persiapan acara. \nBranding lengkap\nBahan acara & signage\nDukungan logistik",
+    "cover_image": null,
+    "link": "/landing",
+    "price": "Hubungi",
+    "is_featured": 0,
+    "tags": "[\"Branding lengkap\",\"Bahan acara & signage\",\"Dukungan logistik\"]",
+    "published_at": "2026-07-07T14:16:45.809Z"
+  },
+  {
+    "id": 2,
+    "title": "sas",
+    "slug": "paket-executive-gift-set",
+    "excerpt": "aaaaa",
+    "content": "aaaaiiii",
+    "cover_image": "/uploads/1783686048996-zhdpwr-komposisi-meja-kerja-minimalis-elegan.webp",
+    "link": "http://localhost:3000/landing",
+    "price": "Rp 85.000 / paket",
+    "is_featured": 0,
+    "tags": "[\"asasasasasasas\"]",
+    "published_at": "2026-07-10T12:20:54.455Z"
+  }
+]

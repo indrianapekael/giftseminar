@@ -1,0 +1,127 @@
+{
+  "hero": {
+    "title": "Paket Seminar Profesional",
+    "subtitle": "SeminarKit · Paket Siap Pakai",
+    "description": "Pilih paket perlengkapan seminar yang sesuai: paket dasar, paket pro, atau paket premium lengkap dengan materi dan sertifikat.",
+    "cta": {
+      "primary": {
+        "text": "Lihat Paket",
+        "href": "/landing"
+      },
+      "secondary": {
+        "text": "Panduan Penyelenggaraan",
+        "href": "/blog"
+      }
+    },
+    "image": "/images/product/produk-hero.webp"
+  },
+  "features": [
+    {
+      "title": "Bahan Terpilih",
+      "description": "Perlengkapan dibuat dari bahan yang nyaman dan tahan lama untuk kenyamanan peserta.",
+      "icon": "◒"
+    },
+    {
+      "title": "Paket Terstruktur",
+      "description": "Tersedia paket yang disusun untuk memudahkan logistik acara, mulai dari pendaftaran hingga materi.",
+      "icon": "◇"
+    },
+    {
+      "title": "Dukungan Penyelenggara",
+      "description": "Kami menyediakan panduan dan dukungan agar acara Anda berjalan lancar dan profesional.",
+      "icon": "✦"
+    }
+  ],
+  "benefits": [
+    {
+      "title": "Paket lengkap, siap pakai.",
+      "description": "Semua perlengkapan seminar dikemas dalam satu solusi praktis agar tim Anda bisa fokus pada penyelenggaraan acara."
+    },
+    {
+      "title": "Cocok untuk berbagai skala acara.",
+      "description": "Pilih paket sesuai kebutuhan seminar, dari kelas kecil hingga konferensi besar, dengan opsi kustom untuk branding."
+    },
+    {
+      "title": "Panduan operasional yang jelas.",
+      "description": "Checklist dan materi pendukung membantu manajemen acara, registrasi, dan distribusi materi peserta dengan rapi."
+    }
+  ],
+  "pricing": [
+    {
+      "name": "Standar",
+      "price": "Mulai Rp 1.200.000",
+      "description": "Paket dasar untuk seminar kecil dengan perlengkapan peserta dan identitas acara.",
+      "features": ["Tas peserta", "Blocknote & pulpen", "Sertifikat peserta"],
+      "highlighted": false,
+      "cta": {
+        "text": "Telusuri paket",
+        "href": "/landing"
+      }
+    },
+    {
+      "name": "Pro",
+      "price": "Mulai Rp 2.650.000",
+      "description": "Paket lengkap dengan materi promosi, sertifikat, dan opsi kustom branding.",
+      "features": ["Kit peserta premium", "Materi cetak & digital", "Kustom branding sederhana"],
+      "highlighted": true,
+      "cta": {
+        "text": "Telusuri paket",
+        "href": "/landing"
+      }
+    },
+    {
+      "name": "Premium",
+      "price": "Hubungi",
+      "description": "Solusi penuh untuk acara besar dengan opsi kustom, merchandise, dan dukungan persiapan acara. ",
+      "features": ["Branding lengkap", "Bahan acara & signage", "Dukungan logistik"],
+      "highlighted": false,
+      "cta": {
+        "text": "Telusuri paket",
+        "href": "/landing"
+      }
+    }
+  ],
+  "gallery": [
+    {
+      "src": "/images/product/paket-terorganisir.webp",
+      "alt": "Seminar kit dengan materi peserta dan sertifikat",
+      "caption": "Paket peserta lengkap untuk acara terorganisir"
+    },
+    {
+      "src": "/images/product/produk-seminar-profesional.webp",
+      "alt": "Meja seminar dengan bloknote dan lencana nama",
+      "caption": "Detail yang membuat seminar terlihat profesional"
+    },
+    {
+      "src": "/images/product/service-lima.webp",
+      "alt": "Peserta seminar dengan perlengkapan acara",
+      "caption": "Pengalaman peserta yang rapi dan terstruktur"
+    }
+  ],
+  "faq": [
+    {
+      "question": "Apa saja yang termasuk dalam paket SeminarKit?",
+      "answer": "Setiap paket berisi perlengkapan seminar peserta, materi cetak, sertifikat, dan elemen branding sesuai tipe paket yang dipilih."
+    },
+    {
+      "question": "Bisakah paket disesuaikan dengan identitas acara kami?",
+      "answer": "Ya. Paket Pro dan Premium menawarkan opsi kustom branding, pilihan warna, serta penyesuaian materi acara."
+    },
+    {
+      "question": "Berapa lama proses pengiriman biasanya?",
+      "answer": "Waktu pengiriman tergantung lokasi dan opsi paket. Hubungi kami untuk estimasi pengiriman dan jadwal produksi."
+    },
+    {
+      "question": "Apakah ada panduan penggunaan untuk penyelenggara?",
+      "answer": "Ya. Setiap paket dilengkapi checklist dan saran operasional agar seminar berjalan lancar dari registrasi hingga evaluasi."
+    }
+  ],
+  "finalCta": {
+    "title": "Siapkan seminar Anda dengan perlengkapan profesional.",
+    "description": "Pilih paket yang sesuai, sesuaikan branding, dan persiapkan acara yang berkesan untuk peserta.",
+    "button": {
+      "text": "Lihat Paket",
+      "href": "/landing"
+    }
+  }
+}

@@ -1,0 +1,305 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Header from '@/components/common/Header.astro';
+import Footer from '@/components/common/Footer.astro';
+import GlassPanel from '@/components/common/GlassPanel.astro';
+import Container from '@/components/ui/Container.astro';
+import PostGrid from '@/components/blog/PostGrid.astro';
+import Pagination from '@/components/blog/Pagination.astro';
+import { getAllPosts } from '@/lib/db';
+import siteConfig from '@/site.config';
+
+// Server-side rendering
+export const prerender = false;
+
+let allPosts: any[] = [];
+let featured: any[] = [];
+let pagePosts: any[] = [];
+
+function parseTags(tags: string | null | undefined) {
+  if (!tags) return [];
+  try {
+    const parsed = JSON.parse(tags);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return String(tags)
+      .split(',')
+      .map((t) => t.trim())
+      .filter(Boolean);
+  }
+}
+
+function mapRowsToPosts(rows: any[]) {
+  return rows.map((post) => ({
+    id: post.id,
+    title: post.title,
+    excerpt: post.excerpt,
+    slug: post.slug,
+    cover_image: post.cover_image || undefined,
+    published_at: post.published_at,
+    read_time: post.read_time,
+    is_featured: post.is_featured === 1,
+    tags: parseTags(post.tags),
+    content: post.content,
+  }));
+}
+
+function tagSlug(tag: string) {
+  return tag
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
+function collectTagsFromPosts(posts: any[]) {
+  const bySlug = new Map<string, { tag: string; count: number }>();
+  for (const post of posts) {
+    const tags = Array.isArray(post.tags) ? post.tags : parseTags(post.tags);
+    const seen = new Set<string>();
+    for (const raw of tags) {
+      const slug = tagSlug(raw);
+      if (!slug || seen.has(slug)) continue;
+      seen.add(slug);
+      const existing = bySlug.get(slug);
+      if (existing) existing.count += 1;
+      else bySlug.set(slug, { tag: raw, count: 1 });
+    }
+  }
+  return [...bySlug.entries()]
+    .map(([slug, { tag, count }]) => ({ tag, slug, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+}
+
+try {
+  const rows = await getAllPosts();
+  allPosts = mapRowsToPosts(rows);
+
+  featured = allPosts.filter((p: any) => p.is_featured).slice(0, 2);
+  const perPage = siteConfig.blog.postsPerPage;
+  pagePosts = allPosts.slice(0, perPage);
+} catch (error) {
+  console.error('Error loading posts from database:', error);
+}
+
+const totalPages = Math.max(1, Math.ceil(allPosts.length / siteConfig.blog.postsPerPage));
+---
+
+<BaseLayout
+  title="Blog"
+  description="Panduan, tips, dan artikel seputar SeminarKit untuk acara seminar yang profesional."
+>
+  <Header />
+
+  <main id="main" tabindex="-1" class="main-content">
+    <section class="blog-hero">
+      <Container size="xl">
+        <GlassPanel variant="solid" padding="xl" className="hero-content">
+          <div class="hero-copy">
+            <p class="hero-kicker">Blog SeminarKit</p>
+            <h1 class="hero-title">Blog</h1>
+            <p class="hero-description">
+              Temukan panduan seminar, checklist acara, dan inspirasi logistik yang membantu tim Anda menyiapkan acara dengan lebih rapi.
+            </p>
+          </div>
+          <div class="hero-meta">
+            <span>Checklist</span>
+            <span>Logistik</span>
+            <span>Branding</span>
+          </div>
+        </GlassPanel>
+      </Container>
+    </section>
+
+    {
+      featured.length > 0 && (
+        <section class="section">
+          <Container size="xl">
+            <div class="section-heading">
+              <h2 class="section-title">Artikel unggulan</h2>
+              <p>Rekomendasi bacaan untuk mempersiapkan seminar dari awal sampai selesai.</p>
+            </div>
+            <PostGrid posts={featured} columns="two" />
+          </Container>
+        </section>
+      )
+    }
+
+    <section class="section">
+      <Container size="xl">
+        <div class="section-heading">
+          <h2 class="section-title">
+            {featured.length > 0 ? 'Artikel terbaru' : 'Semua artikel'}
+          </h2>
+          <p>Semua panduan dan insight SeminarKit dalam satu tempat.</p>
+        </div>
+
+        {
+          /* Tag tabs built client-side: compute available tags server-side */
+        }
+        {
+          (() => {
+            const tags = collectTagsFromPosts(allPosts);
+            if (tags.length === 0) return null;
+            return (
+              <div class="tag-tabs">
+                <button type="button" data-slug="all" class="tag-tab active">Semua</button>
+                {tags.map(({ tag, slug, count }) => (
+                  <button type="button" data-slug={slug} class="tag-tab">{tag} <span class="tag-count">{count}</span></button>
+                ))}
+              </div>
+            );
+          })()
+        }
+
+        {
+          allPosts.length === 0 ? (
+            <GlassPanel variant="default" padding="xl" className="empty-state">
+              <p>Belum ada artikel yang tersedia. Kunjungi kembali nanti.</p>
+            </GlassPanel>
+          ) : (
+            <>
+              <PostGrid posts={pagePosts} />
+              <Pagination currentPage={1} totalPages={totalPages} basePath="/blog" />
+              <script type="module">
+                // Client-side filtering for tag tabs
+                document.addEventListener('DOMContentLoaded', () => {
+                  const tabs = Array.from(document.querySelectorAll('.tag-tab'));
+                  const grid = document.querySelector('.posts-grid');
+                  if (!grid) return;
+                  const cards = Array.from(grid.querySelectorAll('.blog-card'));
+
+                  function setActive(btn) {
+                    tabs.forEach((b) => b.classList.remove('active'));
+                    btn.classList.add('active');
+                  }
+
+                  function showAll() {
+                    cards.forEach((c) => (c.style.display = ''));
+                  }
+
+                  function filterBySlug(slug) {
+                    cards.forEach((c) => {
+                      const tags = (c.getAttribute('data-tags') || '').split(/\s+/).filter(Boolean);
+                      if (tags.includes(slug)) c.style.display = '';
+                      else c.style.display = 'none';
+                    });
+                  }
+
+                  tabs.forEach((tab) => {
+                    tab.addEventListener('click', () => {
+                      const slug = tab.getAttribute('data-slug');
+                      setActive(tab);
+                      if (!slug || slug === 'all') showAll();
+                      else filterBySlug(slug);
+                    });
+                  });
+                });
+              </script>
+            </>
+          )
+        }
+      </Container>
+    </section>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .main-content {
+    padding-bottom: var(--space-3xl);
+  }
+
+  .blog-hero {
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  .hero-content {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(16rem, 0.6fr);
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  .hero-kicker {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  .hero-title {
+    margin: 0 0 var(--space-sm);
+    font-size: clamp(2.2rem, 4vw, 3rem);
+    line-height: 1.05;
+  }
+
+  .hero-description {
+    margin: 0;
+    max-width: 42rem;
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    justify-content: flex-end;
+  }
+
+  .hero-meta span {
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 999px;
+    background: var(--glass-bg);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+
+  .section {
+    padding-block: var(--space-xl);
+  }
+
+  .section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    gap: var(--space-md);
+    margin-bottom: var(--space-xl);
+  }
+
+  .section-title {
+    margin: 0;
+    font-size: clamp(1.25rem, 2.4vw, 1.6rem);
+  }
+
+  .section-heading p {
+    margin: 0;
+    max-width: 28rem;
+    color: var(--color-text-muted);
+  }
+
+  .empty-state {
+    text-align: center;
+  }
+
+  @media (max-width: 768px) {
+    .hero-content {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-meta {
+      justify-content: flex-start;
+    }
+
+    .section-heading {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>

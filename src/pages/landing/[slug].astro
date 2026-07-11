@@ -1,0 +1,211 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Header from '@/components/common/Header.astro';
+import Footer from '@/components/common/Footer.astro';
+import Container from '@/components/ui/Container.astro';
+import GlassPanel from '@/components/common/GlassPanel.astro';
+import Button from '@/components/ui/Button.astro';
+import Picture from '@/components/ui/Picture.astro';
+import { getAllProducts } from '@/lib/db';
+
+export const prerender = false;
+
+const { slug } = Astro.params;
+const products = await getAllProducts();
+const product = products.find((item: any) => String(item.slug) === String(slug));
+
+if (!product) {
+  throw new Error('Product not found');
+}
+
+const features = (() => {
+  if (Array.isArray(product.features)) return product.features.filter(Boolean).map(String);
+  if (typeof product.tags === 'string') {
+    try {
+      const parsed = JSON.parse(product.tags);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+    } catch {
+      // ignore
+    }
+    return product.tags
+      .split(',')
+      .map((item: string) => item.trim())
+      .filter(Boolean);
+  }
+  if (typeof product.content === 'string') {
+    return product.content
+      .split('\n')
+      .map((item: string) => item.trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+  return [];
+})();
+---
+
+<BaseLayout title={`${product.title} | SeminarKit`} description={product.excerpt || 'Detail produk SeminarKit'}>
+  <Header />
+
+  <main id="main" tabindex="-1" class="product-detail-page">
+    <Container size="xl">
+      <GlassPanel variant="solid" padding="xl" radius="xl" className="product-detail-card">
+        <div class="product-hero">
+          <div class="product-copy">
+            <p class="eyebrow">Produk SeminarKit</p>
+            <h1>{product.title}</h1>
+            <p class="product-description">{product.excerpt || 'Paket seminar profesional yang siap dipakai.'}</p>
+            <div class="product-meta">
+              {product.price && <span class="pill">{product.price}</span>}
+              {product.link && <span class="pill">Tautan tersedia</span>}
+            </div>
+            <div class="product-actions">
+              {product.link && <Button href={product.link} external variant="solid" size="md">Lihat produk</Button>}
+              <Button href="/landing" variant="outline" size="md">Kembali ke daftar</Button>
+            </div>
+          </div>
+
+          {product.cover_image && (
+            <div class="product-image-wrap">
+              <Picture
+                src={product.cover_image}
+                alt={product.title || 'Gambar produk'}
+                width={600}
+                height={600}
+                sizes="(min-width: 900px) 50vw, 100vw"
+                class="product-image"
+              />
+            </div>
+          )}
+        </div>
+
+        <div class="product-body">
+          <section class="product-section">
+            <h2>Deskripsi</h2>
+            <p>{product.content || 'Informasi detail akan segera tersedia.'}</p>
+          </section>
+
+          {features.length > 0 && (
+            <section class="product-section">
+              <h2>Keunggulan</h2>
+              <ul class="feature-list">
+                {features.map((feature: string) => (
+                  <li>{feature}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
+      </GlassPanel>
+    </Container>
+  </main>
+
+  <Footer />
+</BaseLayout>
+
+<style>
+  .product-detail-page {
+    padding-block: clamp(2.5rem, 6vw, 4.5rem);
+  }
+
+  .product-detail-card {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .product-hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(16rem, 0.9fr);
+    gap: var(--space-xl);
+    align-items: center;
+  }
+
+  .eyebrow {
+    margin: 0 0 var(--space-sm);
+    color: var(--color-accent);
+    font-size: var(--text-sm);
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 0 0 var(--space-md);
+    font-size: clamp(2rem, 3.8vw, 2.9rem);
+  }
+
+  .product-description {
+    margin: 0 0 var(--space-lg);
+    color: var(--color-text-muted);
+    font-size: var(--text-lg);
+    line-height: 1.7;
+  }
+
+  .product-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-lg);
+  }
+
+  .pill {
+    display: inline-flex;
+    padding: 0.55rem 0.8rem;
+    border-radius: 999px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    color: var(--color-text-muted);
+  }
+
+  .product-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  .product-image-wrap {
+    display: flex;
+    justify-content: center;
+  }
+
+  .product-image {
+    width: 100%;
+    max-height: 24rem;
+    object-fit: cover;
+    border-radius: var(--radius-xl);
+    border: 1px solid var(--glass-border);
+  }
+
+  .product-body {
+    display: grid;
+    gap: var(--space-lg);
+  }
+
+  .product-section {
+    padding-top: var(--space-lg);
+    border-top: 1px solid var(--glass-border);
+  }
+
+  .product-section h2 {
+    margin: 0 0 var(--space-md);
+    font-size: 1.2rem;
+  }
+
+  .product-section p,
+  .product-section li {
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+
+  .feature-list {
+    display: grid;
+    gap: var(--space-sm);
+    padding-left: 1.2rem;
+    margin: 0;
+  }
+
+  @media (max-width: 768px) {
+    .product-hero {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

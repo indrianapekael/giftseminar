@@ -1,0 +1,90 @@
+---
+import BlogCard from './BlogCard.astro';
+import { withBase } from '@/lib/url';
+import siteConfig from '@/site.config';
+
+// Diubah: Menyiapkan interface berdasarkan schema kolom Database
+export interface DBPost {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  cover_image?: string;
+  published_at: string | Date;
+  read_time?: number;
+  is_featured?: boolean;
+  tags?: string[];
+}
+
+export interface Props {
+  posts: DBPost[]; // Diubah: Menerima array post dari Database
+  columns?: 'auto' | 'two';
+}
+
+const { posts, columns = 'auto' } = Astro.props;
+
+function normalizeTags(value: any): string[] {
+  if (Array.isArray(value)) return value.filter(Boolean).map(String);
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+    } catch {
+      return value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+    }
+  }
+  return [];
+}
+
+function normalizeDate(value: string | Date | undefined | null) {
+  if (!value) return null;
+  const date = value instanceof Date ? value : new Date(value);
+  return Number.isNaN(date.valueOf()) ? null : date;
+}
+
+// Honour the same flag the single-post page does, so the card grid hides
+// reading time when blog.showReadingTime is false.
+const showReadingTime = siteConfig.blog.showReadingTime;
+---
+
+<div class={`posts-grid posts-grid--${columns}`}>
+  {
+    posts.map((post) => (
+      <BlogCard
+        title={post.title}
+        description={post.excerpt}
+        pubDate={normalizeDate(post.published_at)}
+        heroImage={post.cover_image}
+        heroImageAlt={post.title}
+        tags={normalizeTags(post.tags)}
+        href={withBase(`/blog/${post.slug}`)}
+        readingTime={showReadingTime ? post.read_time : undefined}
+        featured={post.is_featured}
+      />
+    ))
+  }
+</div>
+
+<style>
+  .posts-grid {
+    display: grid;
+    gap: var(--space-xl);
+  }
+
+  .posts-grid--auto {
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  }
+
+  .posts-grid--two {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+
+  @media (max-width: 640px) {
+    .posts-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

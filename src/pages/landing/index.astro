@@ -1,0 +1,116 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import siteConfig from '@/site.config';
+import Header from '@/components/common/Header.astro';
+import Footer from '@/components/common/Footer.astro';
+import Hero from '@/components/landing/Hero.astro';
+import Features from '@/components/landing/Features.astro';
+import Benefits from '@/components/landing/Benefits.astro';
+import Pricing from '@/components/landing/Pricing.astro';
+import Gallery from '@/components/landing/Gallery.astro';
+import Testimonials from '@/components/landing/Testimonials.astro';
+import Faq from '@/components/landing/Faq.astro';
+import FinalCta from '@/components/landing/FinalCta.astro';
+import { getAllProducts, createProduct } from '@/lib/db';
+
+export const prerender = false;
+
+function parseFeatures(value: unknown): string[] {
+  if (Array.isArray(value)) return value.filter(Boolean).map(String);
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) return parsed.filter(Boolean).map(String);
+    } catch {
+      // ignore
+    }
+    return value
+      .split(',')
+      .map((item) => item.trim())
+      .filter(Boolean);
+  }
+  return [];
+}
+
+function mapProductToPlan(product: any, fallback: any = {}) {
+  const features = parseFeatures(product.features ?? product.tags ?? product.content ?? []);
+  const slug = product.slug || fallback.slug || 'produk';
+  return {
+    name: product.title || fallback.name || 'Produk SeminarKit',
+    price: product.price || fallback.price || 'Hubungi',
+    description: product.excerpt || fallback.description || 'Paket seminar profesional yang siap dipakai.',
+    features,
+    highlighted: Boolean(product.is_featured || fallback.highlighted),
+    cta: {
+      text: 'Lihat detail',
+      href: product.link || fallback.cta?.href || `/landing/${slug}`,
+    },
+    coverImage: product.cover_image || fallback.coverImage || '',
+    slug,
+  };
+}
+
+const [entry] = await getCollection('landing');
+
+if (!entry) {
+  throw new Error('Add at least one entry to src/content/landing.');
+}
+
+const { hero, features, benefits, pricing, gallery, testimonials, faq, finalCta } = entry.data;
+const safePricing = Array.isArray(pricing) ? pricing : [];
+const safeFeatures = Array.isArray(features) ? features : [];
+const safeBenefits = Array.isArray(benefits) ? benefits : [];
+const safeGallery = Array.isArray(gallery) ? gallery : [];
+const safeTestimonials = Array.isArray(testimonials) ? testimonials : [];
+const safeFaq = Array.isArray(faq) ? faq : [];
+
+const existingProducts = await getAllProducts();
+const productsFromDb = Array.isArray(existingProducts) ? existingProducts : [];
+
+if (!productsFromDb.length && safePricing.length > 0) {
+  await Promise.all(
+    safePricing.map((plan: any, index: number) =>
+      createProduct({
+        title: plan.name || `Paket Seminar ${index + 1}`,
+        slug: `paket-${(plan.name || `produk-${index + 1}`).toLowerCase().replace(/[^a-z0-9]+/g, '-')}`,
+        excerpt: plan.description || 'Paket seminar profesional.',
+        content: [plan.description, ...(plan.features || [])].join('\n'),
+        price: plan.price || 'Hubungi',
+        link: plan.cta?.href || '/about',
+        is_featured: Boolean(plan.highlighted),
+        tags: (plan.features || []).join(', '),
+      })
+    )
+  );
+}
+
+const displayPlans = (productsFromDb.length > 0 ? productsFromDb : safePricing).map((product: any, index: number) => {
+  const fallback = safePricing[index] || safePricing[0];
+  return mapProductToPlan(product, fallback);
+});
+---
+
+<BaseLayout
+  title={`${hero.title} | ${siteConfig.name}`}
+  description={hero.description}
+>
+  <Header />
+  <main id="main" tabindex="-1">
+    <Hero hero={hero} />
+    {safeFeatures.length > 0 && <Features features={safeFeatures} />}
+    {safeBenefits.length > 0 && <Benefits benefits={safeBenefits} />}
+    {safeGallery.length > 0 && <Gallery images={safeGallery} />}
+    {displayPlans.length > 0 && <Pricing plans={displayPlans} />}
+    {safeTestimonials.length > 0 && <Testimonials testimonials={safeTestimonials} />}
+    {safeFaq.length > 0 && <Faq items={safeFaq} />}
+    {finalCta && <FinalCta cta={finalCta} />}
+  </main>
+  <Footer />
+</BaseLayout>
+
+<style>
+  main {
+    overflow: clip;
+  }
+</style>

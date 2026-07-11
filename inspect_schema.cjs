@@ -1,0 +1,1 @@
+const mysql = require("mysql2/promise");(async()=>{try{const conn=await mysql.createConnection({host:"localhost",port:3306,user:"root",password:"",database:"blog"});const [rows]=await conn.query("SHOW CREATE TABLE blog_posts");console.log(rows[0]["Create Table"]);await conn.end();}catch(err){console.error(err);process.exit(1);}})();

@@ -104,8 +104,8 @@ export const prerender = false;
                       <h3>Artikel</h3>
                       <div style="overflow-x: auto;">
                         <table class="dashboard-latest-table">
-                          <thead><tr><th>Judul</th><th>Tanggal</th><th style="text-align: right;">Aksi</th></tr></thead>
-                          <tbody id="latestPosts"><tr><td colspan="3">⏳ Memuat...</td></tr></tbody>
+                          <thead><tr><th style="width: 40px; text-align: center;">No</th><th>Judul</th><th style="width: 120px;">Tanggal</th><th style="text-align: right; width: 140px;">Aksi</th></tr></thead>
+                          <tbody id="latestPosts"><tr><td colspan="4">⏳ Memuat...</td></tr></tbody>
                         </table>
                       </div>
                     </div>
@@ -113,8 +113,8 @@ export const prerender = false;
                       <h3>Portfolio</h3>
                       <div style="overflow-x: auto;">
                         <table class="dashboard-latest-table">
-                          <thead><tr><th>Judul</th><th>Tanggal</th><th style="text-align: right;">Aksi</th></tr></thead>
-                          <tbody id="latestProjects"><tr><td colspan="3">⏳ Memuat...</td></tr></tbody>
+                          <thead><tr><th style="width: 40px; text-align: center;">No</th><th>Judul</th><th style="width: 120px;">Tanggal</th><th style="text-align: right; width: 140px;">Aksi</th></tr></thead>
+                          <tbody id="latestProjects"><tr><td colspan="4">⏳ Memuat...</td></tr></tbody>
                         </table>
                       </div>
                     </div>
@@ -122,8 +122,8 @@ export const prerender = false;
                       <h3>Produk</h3>
                       <div style="overflow-x: auto;">
                         <table class="dashboard-latest-table">
-                          <thead><tr><th>Judul</th><th>Tanggal</th><th style="text-align: right;">Aksi</th></tr></thead>
-                          <tbody id="latestProducts"><tr><td colspan="3">⏳ Memuat...</td></tr></tbody>
+                          <thead><tr><th style="width: 40px; text-align: center;">No</th><th>Judul</th><th style="width: 120px;">Tanggal</th><th style="text-align: right; width: 140px;">Aksi</th></tr></thead>
+                          <tbody id="latestProducts"><tr><td colspan="4">⏳ Memuat...</td></tr></tbody>
                         </table>
                       </div>
                     </div>
@@ -835,6 +835,12 @@ export const prerender = false;
       width: 100%;
       border-collapse: collapse;
       margin-top: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .dashboard-latest-table th,
+    .dashboard-latest-table td {
+      border: 1px solid rgba(255,255,255,0.1);
     }
 
     .dashboard-latest-table th {
@@ -844,13 +850,12 @@ export const prerender = false;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       padding: 0.75rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.02);
       font-weight: 600;
     }
 
     .dashboard-latest-table td {
       padding: 0.85rem 0.75rem;
-      border-bottom: 1px solid rgba(255,255,255,0.05);
       color: var(--color-text);
       font-size: 0.95rem;
       vertical-align: middle;
@@ -1561,14 +1566,15 @@ export const prerender = false;
       function renderDashboardLatest(posts, projects, products) {
         function formatLatest(items, formatter, emptyLabel, type) {
           if (!Array.isArray(items) || items.length === 0) {
-            return '<tr><td colspan="3" class="dashboard-latest-empty">' + escapeHtml(emptyLabel) + '</td></tr>';
+            return '<tr><td colspan="4" class="dashboard-latest-empty">' + escapeHtml(emptyLabel) + '</td></tr>';
           }
 
-          return items.slice(0, 3).map(function (item) {
+          return items.slice(0, 3).map(function (item, index) {
             var title = item.title || item.name || 'Tanpa judul';
             var dateLabel = formatter(item);
             var idEsc = item.id ? JSON.stringify(item.id) : 'null';
             return '<tr>' +
+              '<td style="text-align: center;">' + (index + 1) + '</td>' +
               '<td><strong>' + escapeHtml(title) + '</strong></td>' +
               '<td>' + escapeHtml(dateLabel) + '</td>' +
               '<td style="text-align: right; white-space: nowrap;">' +
@@ -1588,7 +1594,7 @@ export const prerender = false;
         }, 'Tidak ada artikel', 'posts');
 
         if (latestProjects) latestProjects.innerHTML = formatLatest(projects, function (item) {
-          return item.year ? 'Tahun ' + item.year : item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : '—';
+          return item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : (item.year ? 'Tahun ' + item.year : '—');
         }, 'Tidak ada portfolio', 'projects');
 
         if (latestProducts) latestProducts.innerHTML = formatLatest(products, function (item) {

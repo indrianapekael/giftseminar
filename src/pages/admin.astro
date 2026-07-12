@@ -102,15 +102,30 @@ export const prerender = false;
                   <div class="dashboard-latest-stack">
                     <div class="dashboard-latest-group">
                       <h3>Artikel</h3>
-                      <ol id="latestPosts" class="dashboard-latest-list"><li>⏳ Memuat...</li></ol>
+                      <div style="overflow-x: auto;">
+                        <table class="dashboard-latest-table">
+                          <thead><tr><th>Judul</th><th>Tanggal</th><th style="text-align: right;">Aksi</th></tr></thead>
+                          <tbody id="latestPosts"><tr><td colspan="3">⏳ Memuat...</td></tr></tbody>
+                        </table>
+                      </div>
                     </div>
                     <div class="dashboard-latest-group">
                       <h3>Portfolio</h3>
-                      <ol id="latestProjects" class="dashboard-latest-list"><li>⏳ Memuat...</li></ol>
+                      <div style="overflow-x: auto;">
+                        <table class="dashboard-latest-table">
+                          <thead><tr><th>Judul</th><th>Tanggal</th><th style="text-align: right;">Aksi</th></tr></thead>
+                          <tbody id="latestProjects"><tr><td colspan="3">⏳ Memuat...</td></tr></tbody>
+                        </table>
+                      </div>
                     </div>
                     <div class="dashboard-latest-group">
                       <h3>Produk</h3>
-                      <ol id="latestProducts" class="dashboard-latest-list"><li>⏳ Memuat...</li></ol>
+                      <div style="overflow-x: auto;">
+                        <table class="dashboard-latest-table">
+                          <thead><tr><th>Judul</th><th>Tanggal</th><th style="text-align: right;">Aksi</th></tr></thead>
+                          <tbody id="latestProducts"><tr><td colspan="3">⏳ Memuat...</td></tr></tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -797,8 +812,8 @@ export const prerender = false;
 
     .dashboard-latest-stack {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 0.65rem;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
     }
 
     .dashboard-latest-group {
@@ -816,45 +831,54 @@ export const prerender = false;
       letter-spacing: 0.08em;
     }
 
-    .dashboard-latest-list {
-      list-style: none;
-      margin: 0;
-      padding: 0;
-      display: grid;
-      gap: 0.45rem;
+    .dashboard-latest-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
     }
 
-    .dashboard-latest-list li {
-      padding: 0.65rem 0.75rem;
-      border-radius: var(--radius-md);
-      background: rgba(255,255,255,0.05);
+    .dashboard-latest-table th {
+      text-align: left;
+      color: var(--color-text-muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      font-weight: 600;
+    }
+
+    .dashboard-latest-table td {
+      padding: 0.85rem 0.75rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
       color: var(--color-text);
-      font-size: 0.9rem;
-      line-height: 1.35;
-      border: 1px solid rgba(255,255,255,0.05);
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 0.6rem;
-    }
-
-    .dashboard-latest-list li strong {
-      display: block;
-      margin-bottom: 0.25rem;
       font-size: 0.95rem;
+      vertical-align: middle;
     }
 
-    .dashboard-latest-list li small {
-      display: block;
-      color: var(--color-text-muted);
-      font-size: 0.82rem;
+    .dashboard-latest-table tr:last-child td {
+      border-bottom: none;
     }
 
-    .dashboard-latest-list li.dashboard-latest-empty {
-      justify-content: flex-start;
+    .dashboard-latest-table tbody tr {
+      background: rgba(255,255,255,0.02);
+      transition: background var(--transition-base);
+    }
+
+    .dashboard-latest-table tbody tr:hover {
+      background: rgba(255,255,255,0.06);
+    }
+
+    .dashboard-latest-table strong {
+      color: var(--color-text);
+      font-weight: 600;
+    }
+
+    .dashboard-latest-empty {
+      text-align: center;
       color: var(--color-text-muted);
-      background: transparent;
-      border-style: dashed;
+      padding: 1.5rem !important;
+      font-style: italic;
     }
 
     .posts-grid {
@@ -1535,15 +1559,23 @@ export const prerender = false;
       }
 
       function renderDashboardLatest(posts, projects, products) {
-        function formatLatest(items, formatter, emptyLabel) {
+        function formatLatest(items, formatter, emptyLabel, type) {
           if (!Array.isArray(items) || items.length === 0) {
-            return '<li class="dashboard-latest-empty">' + escapeHtml(emptyLabel) + '</li>';
+            return '<tr><td colspan="3" class="dashboard-latest-empty">' + escapeHtml(emptyLabel) + '</td></tr>';
           }
 
           return items.slice(0, 3).map(function (item) {
             var title = item.title || item.name || 'Tanpa judul';
             var dateLabel = formatter(item);
-            return '<li><div><strong>' + escapeHtml(title) + '</strong>' + (dateLabel ? '<small>' + escapeHtml(dateLabel) + '</small>' : '') + '</div></li>';
+            var idEsc = item.id ? JSON.stringify(item.id) : 'null';
+            return '<tr>' +
+              '<td><strong>' + escapeHtml(title) + '</strong></td>' +
+              '<td>' + escapeHtml(dateLabel) + '</td>' +
+              '<td style="text-align: right; white-space: nowrap;">' +
+                '<button type="button" class="btn btn-small btn-secondary" onclick="window.editContent(\'' + type + '\', ' + idEsc + ')" style="padding: 0.35rem 0.6rem; font-size: 0.8rem; margin-right: 4px;">✏️ Edit</button>' +
+                '<button type="button" class="btn btn-small btn-danger" onclick="window.deleteContentConfirm(\'' + type + '\', ' + idEsc + ')" style="padding: 0.35rem 0.6rem; font-size: 0.8rem;">🗑️ Hapus</button>' +
+              '</td>' +
+            '</tr>';
           }).join('');
         }
 
@@ -1552,16 +1584,16 @@ export const prerender = false;
         var latestProducts = document.getElementById('latestProducts');
 
         if (latestPosts) latestPosts.innerHTML = formatLatest(posts, function (item) {
-          return item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : 'Tanggal tidak tersedia';
-        }, 'Tidak ada artikel');
+          return item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : '—';
+        }, 'Tidak ada artikel', 'posts');
 
         if (latestProjects) latestProjects.innerHTML = formatLatest(projects, function (item) {
-          return item.year ? 'Tahun ' + item.year : item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : 'Tanggal tidak tersedia';
-        }, 'Tidak ada portfolio');
+          return item.year ? 'Tahun ' + item.year : item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : '—';
+        }, 'Tidak ada portfolio', 'projects');
 
         if (latestProducts) latestProducts.innerHTML = formatLatest(products, function (item) {
-          return item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : item.price ? item.price : 'Tanggal tidak tersedia';
-        }, 'Tidak ada produk');
+          return item.published_at ? (new Date(item.published_at)).toLocaleDateString('id-ID') : item.price ? item.price : '—';
+        }, 'Tidak ada produk', 'products');
       }
 
       function updateTypeSections(type) {

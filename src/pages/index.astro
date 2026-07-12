@@ -10,41 +10,31 @@ import Container from '@/components/ui/Container.astro';
 import GlassCard from '@/components/ui/GlassCard.astro';
 import Section from '@/components/ui/Section.astro';
 
-import { getAllProducts, getAllProjects, getAllPosts } from '@/lib/db';
-
-const products = await getAllProducts();
-const projects = await getAllProjects();
-const posts = await getAllPosts();
-
-const product = products[0];
-const project = projects[0];
-const post = posts[0];
-
 const showcases = [
   {
     index: '01',
     type: 'Produk',
-    title: product?.title || 'Paket Seminar Standar',
-    description: product?.excerpt || 'Paket lengkap untuk kebutuhan seminar kecil hingga menengah: tas, buku, sertifikat, dan ID card.',
-    href: product?.link ? product.link : (product?.slug ? `/landing/${product.slug}` : '/landing'),
+    title: 'Paket Seminar Siap Pakai',
+    description: 'Kami menyediakan berbagai macam produk perlengkapan seminar, mulai dari tas, buku, sertifikat, hingga ID card yang bisa disesuaikan dengan kebutuhan acara Anda.',
+    href: '/landing',
     cta: 'Lihat produk',
     className: 'showcase--journal',
   },
   {
     index: '02',
     type: 'Galeri',
-    title: project?.title || 'Contoh paket dan penggunaan',
-    description: project?.summary || 'Galeri foto dan studi kasus penggunaan SeminarKit di acara nyata.',
-    href: project?.slug ? `/work/${project.slug}` : '/work',
+    title: 'Contoh paket dan penggunaan',
+    description: 'Lihat portofolio kami untuk menemukan inspirasi paket merchandise dari berbagai acara seminar dan event profesional yang telah kami tangani.',
+    href: '/work',
     cta: 'Telusuri galeri',
     className: 'showcase--work',
   },
   {
     index: '03',
     type: 'Panduan',
-    title: post?.title || 'Panduan penyelenggara seminar',
-    description: post?.excerpt || 'Panduan lengkap cara menyelenggarakan seminar yang profesional, mulai dari logistik hingga merchandise.',
-    href: post?.slug ? `/blog/${post.slug}` : '/blog',
+    title: 'Panduan penyelenggara seminar',
+    description: 'Temukan berbagai artikel dan panduan lengkap tentang cara menyelenggarakan seminar yang profesional dan sukses, mulai dari persiapan logistik hingga merchandise.',
+    href: '/blog',
     cta: 'Baca panduan',
     className: 'showcase--landing',
   },

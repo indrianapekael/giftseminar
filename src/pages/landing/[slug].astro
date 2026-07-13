@@ -7,6 +7,7 @@ import GlassPanel from '@/components/common/GlassPanel.astro';
 import Button from '@/components/ui/Button.astro';
 import Picture from '@/components/ui/Picture.astro';
 import { getAllProducts } from '@/lib/db';
+import MarkdownIt from 'markdown-it';
 
 export const prerender = false;
 
@@ -41,6 +42,16 @@ const features = (() => {
   }
   return [];
 })();
+
+let contentHtml = '';
+try {
+  if (product.content) {
+    const md = new MarkdownIt({ html: true, linkify: true });
+    contentHtml = md.render(String(product.content));
+  }
+} catch (e) {
+  contentHtml = String(product.content || '');
+}
 ---
 
 <BaseLayout title={`${product.title} | SeminarKit`} description={product.excerpt || 'Detail produk SeminarKit'}>
@@ -81,7 +92,11 @@ const features = (() => {
         <div class="product-body">
           <section class="product-section">
             <h2>Deskripsi</h2>
-            <p>{product.content || 'Informasi detail akan segera tersedia.'}</p>
+            {contentHtml ? (
+              <div class="product-prose" set:html={contentHtml} />
+            ) : (
+              <p>Informasi detail akan segera tersedia.</p>
+            )}
           </section>
 
           {features.length > 0 && (
@@ -194,6 +209,44 @@ const features = (() => {
   .product-section li {
     color: var(--color-text-muted);
     line-height: 1.8;
+  }
+
+  .product-prose {
+    color: var(--color-text-muted);
+    line-height: 1.8;
+  }
+
+  .product-prose p {
+    margin-bottom: var(--space-md);
+  }
+
+  .product-prose h1,
+  .product-prose h2,
+  .product-prose h3,
+  .product-prose h4 {
+    color: var(--color-text);
+    margin-top: var(--space-xl);
+    margin-bottom: var(--space-sm);
+    font-weight: 700;
+  }
+
+  .product-prose h2 {
+    font-size: 1.3rem;
+  }
+  
+  .product-prose h3 {
+    font-size: 1.1rem;
+  }
+
+  .product-prose ul,
+  .product-prose ol {
+    padding-left: 1.2rem;
+    margin-bottom: var(--space-md);
+  }
+
+  .product-prose strong {
+    color: var(--color-text);
+    font-weight: 600;
   }
 
   .feature-list {

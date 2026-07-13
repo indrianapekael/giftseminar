@@ -8,7 +8,7 @@ import WorkArchive from '@/components/portfolio/WorkArchive.astro';
 import siteConfig from '@/site.config';
 
 export const getStaticPaths = (async () => {
-  const projects = (await getAllProjects()).sort((a, b) => {
+  const projects = (await getAllProjects()).sort((a: any, b: any) => {
     if ((a.featured ? 1 : 0) !== (b.featured ? 1 : 0)) return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
     return (b.year || 0) - (a.year || 0);
   });

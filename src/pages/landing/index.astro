@@ -44,7 +44,7 @@ function mapProductToPlan(product: any, fallback: any = {}) {
     highlighted: Boolean(product.is_featured || fallback.highlighted),
     cta: {
       text: 'Lihat detail',
-      href: product.link || fallback.cta?.href || `/landing/${slug}`,
+      href: `/landing/${slug}`,
     },
     coverImage: product.cover_image || fallback.coverImage || '',
     slug,

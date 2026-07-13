@@ -48,7 +48,7 @@ const { plans } = Astro.props;
             {plan.features.map((feature) => <li><span aria-hidden="true">✓</span>{feature}</li>)}
           </ul>
           <div class="pricing-card__cta">
-            <Button href={plan.cta.href} external variant={plan.highlighted ? 'solid' : 'outline'} fullWidth>
+            <Button href={plan.cta.href} variant={plan.highlighted ? 'solid' : 'outline'} fullWidth>
               {plan.cta.text}
             </Button>
           </div>

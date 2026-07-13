@@ -79,20 +79,20 @@ const features = (() => {
         </div>
 
         <div class="product-body">
-          <details class="product-section">
-            <summary><h2>Deskripsi</h2></summary>
+          <section class="product-section">
+            <h2>Deskripsi</h2>
             <p>{product.content || 'Informasi detail akan segera tersedia.'}</p>
-          </details>
+          </section>
 
           {features.length > 0 && (
-            <details class="product-section">
-              <summary><h2>Keunggulan</h2></summary>
+            <section class="product-section">
+              <h2>Keunggulan</h2>
               <ul class="feature-list">
                 {features.map((feature: string) => (
                   <li>{feature}</li>
                 ))}
               </ul>
-            </details>
+            </section>
           )}
         </div>
       </GlassPanel>
@@ -183,16 +183,6 @@ const features = (() => {
   .product-section {
     padding-top: var(--space-lg);
     border-top: 1px solid var(--glass-border);
-  }
-
-  .product-section summary {
-    list-style: none;
-    cursor: pointer;
-    outline: none;
-  }
-
-  .product-section summary::-webkit-details-marker {
-    display: none;
   }
 
   .product-section h2 {
